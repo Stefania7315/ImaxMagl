@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IMAX Management</title>
+  <title>IMAX Management - Fabbisogni</title>
   <style>
     body {
       margin: 0;
@@ -45,70 +45,65 @@
     #content {
       margin-left: 220px;
       flex: 1;
-      padding: 0;
+      padding: 40px;
     }
-    .home {
-      position: relative;
-      height: 100vh;
-      background: url('imax_home_clean.jpg') no-repeat center center;
-      background-size: cover;
-      display: flex;
-      justify-content: flex-start;
-      align-items: flex-end;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
-    .home-content {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 30px 50px;
-      border-radius: 8px;
-      margin: 100px 40px 60px 60px;
+    th, td {
+      padding: 10px;
+      border: 1px solid #444;
       text-align: left;
     }
-    .home-content h1 {
-      display: none;
-    }
-    .home-content p {
-      font-size: 22px;
-      color: #ddd;
-      margin: 0;
+    .insert-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 4px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
   <script>
-    // Al caricamento della pagina, controlla se è presente un parametro idart
-    window.onload = function() {
-      const params = new URLSearchParams(window.location.search);
-      const idart = params.get("idart");
-      if (idart) {
-        window.location.href = `ordini.html?idart=${encodeURIComponent(idart)}`;
-      }
-    }
-
-    // Aggiunta pulsanti per inserimento ordine da codice
-    async function caricaFabbisogniConPulsanti() {
-      const fabbAccURL = 'https://opensheet.elk.sh/1gdjtzT0NUvta_71xzHJMVvupgF2lPgKT/FabbAcc';
+    async function caricaFabbisogni() {
+      const articoliURL = 'https://opensheet.elk.sh/1gdjtzT0NUvta_71xzHJMVvupgF2lPgKT/FabbAcc%20(sel2)';
       const ordiniURL = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
-      const fabbData = await fetch(fabbAccURL).then(r => r.json());
-      const ordiniData = await fetch(ordiniURL).then(r => r.json());
 
-      const ordiniPerArticolo = {};
-      for (const o of ordiniData) {
-        const key = o.idart;
-        if (!ordiniPerArticolo[key]) ordiniPerArticolo[key] = { AI: 0, PE: 0 };
-        if (o.stag.startsWith("AI")) ordiniPerArticolo[key].AI += parseInt(o.qord);
-        if (o.stag.startsWith("PE")) ordiniPerArticolo[key].PE += parseInt(o.qord);
+      const [articoli, ordini] = await Promise.all([
+        fetch(articoliURL).then(r => r.json()),
+        fetch(ordiniURL).then(r => r.json())
+      ]);
+
+      const totali = {};
+      for (const o of ordini) {
+        if (!totali[o.idart]) totali[o.idart] = { AI25: 0, PE25: 0 };
+        if (totali[o.idart][o.stag] !== undefined) {
+          totali[o.idart][o.stag] += parseInt(o.qord);
+        }
       }
 
-      let html = `<table><tr><th>ID</th><th>Descrizione</th><th>AI</th><th>PE</th><th>Ordina</th></tr>`;
-      for (const r of fabbData) {
-        const id = r.ID;
-        const ord = ordiniPerArticolo[id] || { AI: 0, PE: 0 };
-        html += `<tr><td>${id}</td><td>${r.Descrizione}</td><td>${ord.AI}</td><td>${ord.PE}</td><td><button onclick=\"window.location.href='ordini.html?idart=${id}'\">➕</button></td></tr>`;
+      let html = '<table><tr><th>ID Articolo</th><th>Descrizione</th><th>Tot. AI25</th><th>Tot. PE25</th><th>Ordina</th></tr>';
+      for (const a of articoli) {
+        const ai = (totali[a.ID] && totali[a.ID].AI25) || 0;
+        const pe = (totali[a.ID] && totali[a.ID].PE25) || 0;
+        html += `<tr>
+          <td>${a.ID}</td>
+          <td>${a.Descrizione || ''}</td>
+          <td>${ai}</td>
+          <td>${pe}</td>
+          <td><a class="insert-btn" href="ordini.html?idart=${a.ID}">➕</a></td>
+        </tr>`;
       }
-      html += `</table>`;
-      document.getElementById("content").innerHTML = html;
+      html += '</table>';
+      document.getElementById('tabellaFabbisogni').innerHTML = html;
     }
+
+    window.onload = caricaFabbisogni;
   </script>
 </head>
-<body onload="caricaFabbisogniConPulsanti()">
+<body>
   <nav>
     <h1>IMAX</h1>
     <a href="index.html">Home</a>
@@ -116,13 +111,9 @@
     <a href="ordini.html">Ordini</a>
     <a href="#">Magazzino</a>
   </nav>
-
   <div id="content">
-    <div class="home">
-      <div class="home-content">
-        <p>Eccellenza nella produzione di maglieria</p>
-      </div>
-    </div>
+    <h2>Elenco fabbisogni</h2>
+    <div id="tabellaFabbisogni"></div>
   </div>
 </body>
 </html>
