@@ -1,39 +1,68 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ordini - IMAX</title>
+  <title>IMAX Management - Ordini</title>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
       color: white;
-      padding: 20px;
+      display: flex;
     }
-    h2 {
-      margin-bottom: 10px;
+    nav {
+      width: 220px;
+      background-color: #000;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 30px;
+      position: fixed;
     }
-    form {
+    nav h1 {
+      font-size: 20px;
       margin-bottom: 20px;
     }
-    input, select, button {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 14px;
+    nav a {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
       width: 100%;
-      max-width: 400px;
+      text-align: center;
+      padding: 10px 0;
+      text-decoration: none;
+      display: block;
+    }
+    nav a:hover {
+      background-color: #222;
+    }
+    #content {
+      margin-left: 220px;
+      flex: 1;
+      padding: 40px;
+    }
+    form {
+      margin-bottom: 30px;
+    }
+    input, select {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 4px;
+      border: none;
     }
     button {
-      background-color: #444;
-      color: white;
+      padding: 8px 16px;
       border: none;
+      background-color: #2196f3;
+      color: white;
+      border-radius: 4px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #666;
     }
     table {
       width: 100%;
@@ -41,52 +70,76 @@
       margin-top: 20px;
     }
     th, td {
-      border: 1px solid #999;
-      padding: 8px;
+      padding: 10px;
+      border: 1px solid #444;
       text-align: left;
     }
-    th {
-      background-color: #222;
-    }
   </style>
-</head>
-<body>
-  <h2>Ordini</h2>
-  <form id="ordineForm">
-    <input type="text" name="idord" placeholder="ID Ordine" required />
-    <input type="text" name="qord" placeholder="Quantità Ordinata" required />
-    <input type="text" name="stag" placeholder="Stagione (es. AI25 o PE25)" required />
-    <input type="text" name="idart" placeholder="ID Articolo" required />
-    <button type="submit">📦 Inserisci Ordine</button>
-  </form>
-
-  <button onclick="caricaOrdini()">🔄 Carica Ordini</button>
-  <div id="tabella-ordini"></div>
-
   <script>
-    const endpoint = 'https://script.google.com/macros/s/AKfycbzBRm1KugKMVb-1AzjHYVzYZzK-FMDmzo7z-kxYJOoL9kVBDZ4cXJ2MkjU4iePbHHng/exec';
-
-    document.getElementById('ordineForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const form = new FormData(this);
-      await fetch(endpoint, {
-        method: 'POST',
-        body: form
-      });
-      this.reset();
-      caricaOrdini();
-    });
-
     async function caricaOrdini() {
-      const ordiniURL = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
-      const ordiniData = await fetch(ordiniURL).then(r => r.json());
-      let html = `<table><tr><th>ID Ord</th><th>Quantità</th><th>Stagione</th><th>ID Articolo</th></tr>`;
-      for (const r of ordiniData) {
+      const url = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
+      const data = await fetch(url).then(r => r.json());
+      let html = '<table><tr><th>ID Ordine</th><th>Quantità</th><th>Stagione</th><th>ID Articolo</th></tr>';
+      for (const r of data) {
         html += `<tr><td>${r.idord}</td><td>${r.qord}</td><td>${r.stag}</td><td>${r.idart}</td></tr>`;
       }
-      html += `</table>`;
-      document.getElementById("tabella-ordini").innerHTML = html;
+      html += '</table>';
+      document.getElementById('tabellaOrdini').innerHTML = html;
+    }
+
+    function precompilaIdart() {
+      const params = new URLSearchParams(window.location.search);
+      const idart = params.get("idart");
+      if (idart) {
+        document.getElementById("idart").value = idart;
+      }
+    }
+
+    async function inviaOrdine(event) {
+      event.preventDefault();
+      const form = event.target;
+      const idord = form.idord.value;
+      const qord = form.qord.value;
+      const stag = form.stag.value;
+      const idart = form.idart.value;
+
+      const url = 'https://script.google.com/macros/s/AKfycbyk1DL1tE6UO9H7iKjsdyE-nwPlKc98zU-4sfmHxZqBbqu9IWaHvFz4J9Ya3M8ooJUPtQ/exec';
+      await fetch(url, {
+        method: 'POST',
+        body: new URLSearchParams({ idord, qord, stag, idart })
+      });
+      caricaOrdini();
+      form.reset();
+    }
+
+    window.onload = () => {
+      precompilaIdart();
+      caricaOrdini();
     }
   </script>
+</head>
+<body>
+  <nav>
+    <h1>IMAX</h1>
+    <a href="index.html">Home</a>
+    <a href="fabbisogni.html">Fabbisogni</a>
+    <a href="ordini.html">Ordini</a>
+    <a href="#">Magazzino</a>
+  </nav>
+  <div id="content">
+    <h2>Inserisci un nuovo ordine</h2>
+    <form onsubmit="inviaOrdine(event)">
+      <input type="text" name="idord" placeholder="ID Ordine" required>
+      <input type="number" name="qord" placeholder="Quantità" required>
+      <select name="stag" required>
+        <option value="">Stagione</option>
+        <option value="AI25">AI25</option>
+        <option value="PE25">PE25</option>
+      </select>
+      <input type="text" name="idart" id="idart" placeholder="ID Articolo" required>
+      <button type="submit">➕ Aggiungi</button>
+    </form>
+    <div id="tabellaOrdini"></div>
+  </div>
 </body>
 </html>
