@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IMAX Management</title>
   <style>
+    /* Stili generali del corpo */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
       color: white;
-      display: flex;
+      display: flex; /* layout a colonne con sidebar e contenuto */
     }
+
+    /* Stile della barra laterale di navigazione */
     nav {
       width: 220px;
       background-color: #000;
@@ -20,12 +23,16 @@
       flex-direction: column;
       align-items: center;
       padding-top: 30px;
-      position: fixed;
+      position: fixed; /* resta fissa sul lato */
     }
+
+    /* Titolo IMAX nel menu */
     nav h1 {
       font-size: 20px;
       margin-bottom: 20px;
     }
+
+    /* Pulsanti del menu laterale */
     nav button {
       background: none;
       border: none;
@@ -37,42 +44,59 @@
       text-align: center;
       padding: 10px 0;
     }
+
+    /* Effetto al passaggio del mouse */
     nav button:hover {
       background-color: #222;
     }
+
+    /* Contenuto principale accanto alla sidebar */
     #content {
       margin-left: 220px;
       flex: 1;
       padding: 0;
     }
+
+    /* Classe per nascondere le sezioni */
     .hidden {
       display: none;
     }
+
+    /* Sezione HOME con immagine di sfondo */
     .home {
       position: relative;
       height: 100vh;
       background: url('imax_home_bg.jpg') no-repeat center center;
       background-size: cover;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      justify-content: flex-start; /* allinea a sinistra */
+      align-items: flex-end; /* allinea in basso */
     }
+
+    /* Contenitore del testo nella homepage */
     .home-content {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 40px;
+      background: rgba(0, 0, 0, 0.6); /* sfondo semitrasparente */
+      padding: 30px 50px;
       border-radius: 8px;
-      text-align: center;
+      margin: 40px;
+      text-align: left;
     }
+
+    /* Titolo nascosto per evitare doppione con immagine */
     .home-content h1 {
       display: none;
     }
+
+    /* Paragrafo visibile nella homepage */
     .home-content p {
-      font-size: 20px;
+      font-size: 22px;
       color: #ddd;
+      margin: 0;
     }
   </style>
 </head>
 <body>
+  <!-- Sidebar con intestazione e pulsanti -->
   <nav>
     <h1>IMAX</h1>
     <button onclick="showTab('home')">Home</button>
@@ -81,35 +105,44 @@
     <button onclick="showTab('magazzino')">Magazzino</button>
   </nav>
 
+  <!-- Contenitore principale -->
   <div id="content">
+    <!-- Sezione HOME -->
     <div id="home" class="home">
       <div class="home-content">
         <p>Eccellenza nella produzione di maglieria</p>
       </div>
     </div>
 
+    <!-- Sezione Fabbisogni -->
     <div id="fabbisogni" class="hidden" style="padding: 20px;">
       <h2>Fabbisogni</h2>
       <p>(Contenuto dinamico da aggiungere)</p>
     </div>
 
+    <!-- Sezione Ordini -->
     <div id="ordini" class="hidden" style="padding: 20px;">
       <h2>Ordini</h2>
       <p>(Modulo inserimento e tabella ordini)</p>
     </div>
 
+    <!-- Sezione Magazzino -->
     <div id="magazzino" class="hidden" style="padding: 20px;">
       <h2>Magazzino</h2>
       <p>(Contenuto tabella magazzino)</p>
     </div>
   </div>
 
+  <!-- Script per gestire il cambio di scheda -->
   <script>
     function showTab(id) {
+      // Nasconde tutte le sezioni
       document.querySelectorAll('#content > div').forEach(div => div.classList.add('hidden'));
+      // Mostra solo quella cliccata
       document.getElementById(id).classList.remove('hidden');
     }
   </script>
 </body>
 </html>
+
 
