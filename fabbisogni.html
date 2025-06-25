@@ -68,14 +68,25 @@
   </style>
   <script>
     async function caricaFabbisogni() {
-      const articoliURL = 'https://opensheet.elk.sh/1gdjtzT0NUvta_71xzHJMVvupgF2lPgKT/FabbAcc%20(sel2)';
+      const articoliURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSkCb4t9rMl0yJtU14di8Q38bRa9zMGD1JJ3_wAaRVJKwVGqFHzOM_CodiceNonPubblico/pub?output=csv';
       const ordiniURL = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
 
-      const [articoli, ordini] = await Promise.all([
-        fetch(articoliURL).then(r => r.json()),
+      const [articoliCSV, ordini] = await Promise.all([
+        fetch(articoliURL).then(r => r.text()),
         fetch(ordiniURL).then(r => r.json())
       ]);
 
+      // Parse CSV manuale
+      const rows = articoliCSV.trim().split('\n');
+      const headers = rows.shift().split(',');
+      const articoli = rows.map(row => {
+        const values = row.split(',');
+        const obj = {};
+        headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim());
+        return obj;
+      });
+
+      // Calcola totali ordinati
       const totali = {};
       for (const o of ordini) {
         if (!totali[o.idart]) totali[o.idart] = { AI25: 0, PE25: 0 };
@@ -117,3 +128,4 @@
   </div>
 </body>
 </html>
+
