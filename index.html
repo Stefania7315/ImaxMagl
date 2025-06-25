@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IMAX Management</title>
   <style>
-    /* Stili generali del corpo */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
       color: white;
-      display: flex; /* layout a colonne con sidebar e contenuto */
+      display: flex;
     }
-
-    /* Stile della barra laterale di navigazione */
     nav {
       width: 220px;
       background-color: #000;
@@ -23,17 +20,13 @@
       flex-direction: column;
       align-items: center;
       padding-top: 30px;
-      position: fixed; /* resta fissa sul lato */
+      position: fixed;
     }
-
-    /* Titolo IMAX nel menu */
     nav h1 {
       font-size: 20px;
       margin-bottom: 20px;
     }
-
-    /* Pulsanti del menu laterale */
-    nav button {
+    nav a {
       background: none;
       border: none;
       color: white;
@@ -43,106 +36,96 @@
       width: 100%;
       text-align: center;
       padding: 10px 0;
+      text-decoration: none;
+      display: block;
     }
-
-    /* Effetto al passaggio del mouse */
-    nav button:hover {
+    nav a:hover {
       background-color: #222;
     }
-
-    /* Contenuto principale accanto alla sidebar */
     #content {
       margin-left: 220px;
       flex: 1;
       padding: 0;
     }
-
-    /* Classe per nascondere le sezioni */
-    .hidden {
-      display: none;
-    }
-
-    /* Sezione HOME con immagine di sfondo */
     .home {
       position: relative;
       height: 100vh;
       background: url('imax_home_bg.jpg') no-repeat center center;
       background-size: cover;
       display: flex;
-      justify-content: flex-start; /* allinea a sinistra */
-      align-items: flex-end; /* allinea in basso */
+      justify-content: flex-start;
+      align-items: flex-end;
     }
-
-    /* Contenitore del testo nella homepage */
     .home-content {
-      background: rgba(0, 0, 0, 0.6); /* sfondo semitrasparente */
+      background: rgba(0, 0, 0, 0.6);
       padding: 30px 50px;
       border-radius: 8px;
-      margin: 100px 40px 60px 60px;
+      margin: 80px 60px 60px 60px;
       text-align: left;
     }
-
-    /* Titolo nascosto per evitare doppione con immagine */
     .home-content h1 {
       display: none;
     }
-
-    /* Paragrafo visibile nella homepage */
     .home-content p {
       font-size: 22px;
       color: #ddd;
       margin: 0;
     }
   </style>
+  <script>
+    // Al caricamento della pagina, controlla se è presente un parametro idart
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      const idart = params.get("idart");
+      if (idart) {
+        window.location.href = `ordini.html?idart=${encodeURIComponent(idart)}`;
+      }
+    }
+
+    // Aggiunta pulsanti per inserimento ordine da codice
+    async function caricaFabbisogniConPulsanti() {
+      const fabbAccURL = 'https://opensheet.elk.sh/1gdjtzT0NUvta_71xzHJMVvupgF2lPgKT/FabbAcc';
+      const ordiniURL = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
+      const fabbData = await fetch(fabbAccURL).then(r => r.json());
+      const ordiniData = await fetch(ordiniURL).then(r => r.json());
+
+      const ordiniPerArticolo = {};
+      for (const o of ordiniData) {
+        const key = o.idart;
+        if (!ordiniPerArticolo[key]) ordiniPerArticolo[key] = { AI: 0, PE: 0 };
+        if (o.stag.startsWith("AI")) ordiniPerArticolo[key].AI += parseInt(o.qord);
+        if (o.stag.startsWith("PE")) ordiniPerArticolo[key].PE += parseInt(o.qord);
+      }
+
+      let html = `<table><tr><th>ID</th><th>Descrizione</th><th>AI</th><th>PE</th><th>Ordina</th></tr>`;
+      for (const r of fabbData) {
+        const id = r.ID;
+        const ord = ordiniPerArticolo[id] || { AI: 0, PE: 0 };
+        html += `<tr><td>${id}</td><td>${r.Descrizione}</td><td>${ord.AI}</td><td>${ord.PE}</td><td><button onclick=\"window.location.href='ordini.html?idart=${id}'\">➕</button></td></tr>`;
+      }
+      html += `</table>`;
+      document.getElementById("content").innerHTML = html;
+    }
+  </script>
 </head>
-<body>
-  <!-- Sidebar con intestazione e pulsanti -->
+<body onload="caricaFabbisogniConPulsanti()">
   <nav>
     <h1>IMAX</h1>
-    <button onclick="showTab('home')">Home</button>
-    <button onclick="showTab('fabbisogni')">Fabbisogni</button>
-    <button onclick="showTab('ordini')">Ordini</button>
-    <button onclick="showTab('magazzino')">Magazzino</button>
+    <a href="index.html">Home</a>
+    <a href="fabbisogni.html">Fabbisogni</a>
+    <a href="ordini.html">Ordini</a>
+    <a href="#">Magazzino</a>
   </nav>
 
-  <!-- Contenitore principale -->
   <div id="content">
-    <!-- Sezione HOME -->
-    <div id="home" class="home">
+    <div class="home">
       <div class="home-content">
         <p>Eccellenza nella produzione di maglieria</p>
       </div>
     </div>
-
-    <!-- Sezione Fabbisogni -->
-    <div id="fabbisogni" class="hidden" style="padding: 20px;">
-      <h2>Fabbisogni</h2>
-      <p>(Contenuto dinamico da aggiungere)</p>
-    </div>
-
-    <!-- Sezione Ordini -->
-    <div id="ordini" class="hidden" style="padding: 20px;">
-      <h2>Ordini</h2>
-      <p>(Modulo inserimento e tabella ordini)</p>
-    </div>
-
-    <!-- Sezione Magazzino -->
-    <div id="magazzino" class="hidden" style="padding: 20px;">
-      <h2>Magazzino</h2>
-      <p>(Contenuto tabella magazzino)</p>
-    </div>
   </div>
-
-  <!-- Script per gestire il cambio di scheda -->
-  <script>
-    function showTab(id) {
-      // Nasconde tutte le sezioni
-      document.querySelectorAll('#content > div').forEach(div => div.classList.add('hidden'));
-      // Mostra solo quella cliccata
-      document.getElementById(id).classList.remove('hidden');
-    }
-  </script>
 </body>
 </html>
+
 
 
