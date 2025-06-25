@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordini - IMAX</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: white;
+      padding: 20px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 14px;
+      width: 100%;
+      max-width: 400px;
+    }
+    button {
+      background-color: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #666;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+  <h2>Ordini</h2>
+  <form id="ordineForm">
+    <input type="text" name="idord" placeholder="ID Ordine" required />
+    <input type="text" name="qord" placeholder="Quantità Ordinata" required />
+    <input type="text" name="stag" placeholder="Stagione (es. AI25 o PE25)" required />
+    <input type="text" name="idart" placeholder="ID Articolo" required />
+    <button type="submit">📦 Inserisci Ordine</button>
+  </form>
+
+  <button onclick="caricaOrdini()">🔄 Carica Ordini</button>
+  <div id="tabella-ordini"></div>
+
+  <script>
+    const endpoint = 'https://script.google.com/macros/s/AKfycbzBRm1KugKMVb-1AzjHYVzYZzK-FMDmzo7z-kxYJOoL9kVBDZ4cXJ2MkjU4iePbHHng/exec';
+
+    document.getElementById('ordineForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = new FormData(this);
+      await fetch(endpoint, {
+        method: 'POST',
+        body: form
+      });
+      this.reset();
+      caricaOrdini();
+    });
+
+    async function caricaOrdini() {
+      const ordiniURL = 'https://opensheet.elk.sh/1wNinpO63Uh85vD0fw2sgwq54FzeFdJGA1rmobVAK6cc/Ordini';
+      const ordiniData = await fetch(ordiniURL).then(r => r.json());
+      let html = `<table><tr><th>ID Ord</th><th>Quantità</th><th>Stagione</th><th>ID Articolo</th></tr>`;
+      for (const r of ordiniData) {
+        html += `<tr><td>${r.idord}</td><td>${r.qord}</td><td>${r.stag}</td><td>${r.idart}</td></tr>`;
+      }
+      html += `</table>`;
+      document.getElementById("tabella-ordini").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
